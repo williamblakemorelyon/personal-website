@@ -665,7 +665,15 @@ async function callLLM(systemPrompt, userMessage) {
   });
   const data = await response.json();
   if (!response.ok) {
-    throw new Error(data?.error?.error?.message || data?.error || `Request failed (${response.status})`);
+    const errObj = data?.error;
+    let msg;
+    if (typeof errObj === 'string') msg = errObj;
+    else if (errObj?.message) msg = errObj.message;
+    else if (errObj?.error?.message) msg = errObj.error.message;
+    else if (data?.message) msg = data.message;
+    else if (errObj) msg = JSON.stringify(errObj);
+    else msg = `Request failed (${response.status})`;
+    throw new Error(msg);
   }
   const text = (data.content || []).map(b => b.text || '').join('\n');
   return text;
