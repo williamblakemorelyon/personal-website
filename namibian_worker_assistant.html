@@ -544,26 +544,52 @@ function computeItemFrequency(filterFn) {
 }
 
 // ---------------- Map of worksites ----------------
+const COUNTRY_CENTROIDS = {
+  'Namibia': [-22.9576, 18.4904], 'Liberia': [6.4281, -9.4295], 'South Africa': [-30.5595, 22.9375],
+  'Angola': [-11.2027, 17.8739], 'Italy': [41.8719, 12.5674], 'Cameroon': [7.3697, 12.3547],
+  'Togo': [8.6195, 0.8248], 'Botswana': [-22.3285, 24.6849], 'Sierra Leone': [8.4606, -11.7799],
+  'Spain': [40.4637, -3.7492], 'Nigeria': [9.0820, 8.6753], 'Benin': [9.3077, 2.3158],
+  'Cape Verde': [16.5388, -23.0418], 'Zimbabwe': [-19.0154, 29.1549], 'Guinea': [9.9456, -9.6966],
+  'Egypt': [26.8206, 30.8025],
+};
+
 function computeMapSites() {
   const groups = {};
   NWD_DATA.forEach(r => {
     if (r.lat == null || r.lng == null) return;
     const key = r.lat + ',' + r.lng;
-    if (!groups[key]) groups[key] = { lat: r.lat, lng: r.lng, mine: null, count: 0 };
+    if (!groups[key]) groups[key] = { lat: r.lat, lng: r.lng, label: null, count: 0 };
     groups[key].count += 1;
-    if (!groups[key].mine && r.mine) groups[key].mine = r.mine;
+    if (!groups[key].label && r.mine) groups[key].label = r.mine;
   });
   return Object.values(groups)
-    .map(g => ({ ...g, mine: g.mine || 'Unnamed site' }))
+    .map(g => ({ ...g, label: g.label || 'Unnamed site' }))
+    .sort((a, b) => b.count - a.count);
+}
+
+function computeOriginSites() {
+  const counts = {};
+  NWD_DATA.forEach(r => {
+    if (!r.country) return;
+    counts[r.country] = (counts[r.country] || 0) + 1;
+  });
+  return Object.entries(counts)
+    .filter(([country]) => COUNTRY_CENTROIDS[country])
+    .map(([country, count]) => ({ lat: COUNTRY_CENTROIDS[country][0], lng: COUNTRY_CENTROIDS[country][1], label: country, count }))
     .sort((a, b) => b.count - a.count);
 }
 
 function tryMap(query) {
-  const isMapRequest = /\b(map|where were.*(worker|located)|locations? of (the )?workers?|worksite locations?)\b/i.test(query);
+  const isMapRequest = /\b(map|where were.*(worker|located)|locations? of (the )?workers?|worksite locations?|origin|came from|home countr)\b/i.test(query);
   if (!isMapRequest) return null;
+  const qLower = query.toLowerCase();
+  const isOrigin = /\b(origin|came from|home countr|country of origin|countries)\b/.test(qLower);
+  if (isOrigin) {
+    const sites = computeOriginSites();
+    return { sites, totalGeocoded: sites.reduce((s, x) => s + x.count, 0), isOrigin: true };
+  }
   const sites = computeMapSites();
-  const totalGeocoded = sites.reduce((s, site) => s + site.count, 0);
-  return { sites, totalGeocoded };
+  return { sites, totalGeocoded: sites.reduce((s, site) => s + site.count, 0), isOrigin: false };
 }
 
 function initLeafletMap(containerId, sites) {
@@ -586,7 +612,7 @@ function initLeafletMap(containerId, sites) {
       weight: 1.5,
       fillOpacity: 0.6,
     }).addTo(map);
-    marker.bindPopup(`<strong>${s.mine}</strong><br>${s.count} record${s.count === 1 ? '' : 's'}`);
+    marker.bindPopup(`<strong>${s.label}</strong><br>${s.count} record${s.count === 1 ? '' : 's'}`);
     bounds.push([s.lat, s.lng]);
   });
   if (bounds.length === 1) {
@@ -754,8 +780,11 @@ async function handleQuery(query) {
     }
     const mapId = 'map-' + Date.now();
     lastCitationSet = [datasetCitation()];
-    const siteList = mapReq.sites.map(s => `${s.mine} (${s.count})`).join(', ');
-    addAssistantMessage(`<p><strong>Worker locations by mine site</strong> — ${mapReq.totalGeocoded} of ${NWD_DATA.length} total records have coordinates, across ${mapReq.sites.length} sites: ${escapeHtml(siteList)}. Circle size is proportional to the number of records at that site.</p><div id="${mapId}" style="height:380px;width:100%;margin-top:10px;border:1px solid var(--line);"></div><p style="font-size:12px;color:var(--ink-soft);margin-top:8px;">Only geocoded records are shown; most records in the dataset don't have coordinates. Map tiles © OpenStreetMap contributors.</p>${renderCitationBlock(lastCitationSet)}`);
+    const siteList = mapReq.sites.map(s => `${s.label} (${s.count})`).join(', ');
+    const title = mapReq.isOrigin ? 'Worker origins by country' : 'Worker locations by mine site';
+    const unitWord = mapReq.isOrigin ? 'countries' : 'sites';
+    const coverageWord = mapReq.isOrigin ? 'have a recorded country of origin' : 'have coordinates';
+    addAssistantMessage(`<p><strong>${title}</strong> — ${mapReq.totalGeocoded} of ${NWD_DATA.length} total records ${coverageWord}, across ${mapReq.sites.length} ${unitWord}: ${escapeHtml(siteList)}. Circle size is proportional to the number of records.</p><div id="${mapId}" style="height:380px;width:100%;margin-top:10px;border:1px solid var(--line);"></div><p style="font-size:12px;color:var(--ink-soft);margin-top:8px;">${mapReq.isOrigin ? 'Country locations are approximate (national centroids), not precise birthplaces.' : 'Only geocoded records are shown; most records in the dataset don\'t have coordinates.'} Map tiles © OpenStreetMap contributors.</p>${renderCitationBlock(lastCitationSet)}`);
     requestAnimationFrame(() => setTimeout(() => initLeafletMap(mapId, mapReq.sites), 30));
     return;
   }
@@ -866,7 +895,9 @@ const samples = [
   "How many workers died of pneumonia?",
   "Tell me about Tango Mifango",
   "What belongings did Kru workers leave behind?",
-  "Show me a map of worker locations"
+  "Chart of workers by cause of death",
+  "Show me a map of worker locations",
+  "Show me a map of where workers came from"
 ];
 document.getElementById('sampleQs').innerHTML = samples.map(s =>
   `<button class="sample-q-btn" onclick="document.getElementById('input').value=this.textContent; submit();">${s}</button>`
