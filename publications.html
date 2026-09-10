@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Publications — William Blakemore Lyon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: light only;
+    --ink: #1a1f1a;
+    --ink-soft: #444d40;
+    --paper: #eee7d6;
+    --paper-raised: #f6f1e4;
+    --line: #c9bfa4;
+    --accent: #8a4b2e;
+    --accent-soft: #d8c9a8;
+    --sage: #46543f;
+    --serif: 'Source Serif 4', Georgia, serif;
+    --mono: 'IBM Plex Mono', 'Courier New', monospace;
+    --sans: 'Inter', -apple-system, sans-serif;
+  }
+  html { color-scheme: light only; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--ink); overflow-x: hidden; }
+  body {
+    font-family: var(--sans);
+    color: var(--ink);
+    display: flex;
+    justify-content: center;
+  }
+  .page {
+    width: 100%;
+    max-width: 900px;
+    background: var(--paper);
+    min-height: 100vh;
+    padding: 56px 56px 80px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+  }
+  @media (max-width: 640px) {
+    .page { padding: 36px 22px 60px; }
+  }
+
+  .kicker { font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; color: var(--accent); }
+  nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 22px 0;
+    margin-bottom: 28px;
+    border-bottom: 1px solid var(--line);
+    font-family: var(--mono);
+    font-size: 12.5px;
+  }
+  nav .nav-name { letter-spacing: 0.04em; color: var(--ink); text-decoration: none; }
+  nav .nav-links a {
+    text-decoration: none;
+    color: var(--ink-soft);
+    margin-left: 22px;
+    border-bottom: 1px solid transparent;
+  }
+  nav .nav-links a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+  @media (max-width: 640px) {
+    nav { flex-direction: column; align-items: flex-start; gap: 10px; }
+    nav .nav-links a { margin-left: 0; margin-right: 16px; }
+  }
+  h1 {
+    font-family: var(--serif);
+    font-size: 34px;
+    font-weight: 600;
+    margin: 6px 0 0;
+    color: var(--ink);
+  }
+  .subtitle { font-size: 14.5px; color: var(--ink-soft); line-height: 1.6; max-width: 60ch; margin-top: 10px; }
+  .top-links { margin-top: 18px; font-size: 13px; }
+  .top-links a { color: var(--accent); text-decoration: none; border-bottom: 1px dotted var(--accent); }
+  .top-links a:hover { border-bottom-style: solid; }
+
+  hr.rule { border: none; border-top: 1px solid var(--line); margin: 40px 0 28px; }
+
+  section.group { margin-bottom: 38px; }
+  h2.group-title {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    letter-spacing: 0.06em;
+    color: var(--sage);
+    text-transform: uppercase;
+    margin: 0 0 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .pub {
+    display: grid;
+    grid-template-columns: 52px 1fr;
+    gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px dotted var(--line);
+  }
+  .pub:last-child { border-bottom: none; }
+  .pub-year {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    padding-top: 2px;
+  }
+  .pub-body { font-size: 14.5px; line-height: 1.55; }
+  .pub-title { font-weight: 600; }
+  .pub-title a { color: var(--ink); text-decoration: none; }
+  .pub-title a:hover { color: var(--accent); }
+  .pub-venue { color: var(--ink-soft); font-style: italic; }
+  .pub-note { color: var(--ink-soft); font-size: 13px; margin-top: 3px; }
+  .pub-status {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.03em;
+    background: var(--accent-soft);
+    color: var(--ink);
+    padding: 1px 7px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  .no-link { color: var(--ink); }
+
+  .talks-list { columns: 1; font-size: 13.5px; line-height: 1.9; }
+  .talks-list .pub { grid-template-columns: 46px 1fr; padding: 6px 0; }
+  .talks-list .pub-body { font-size: 13.5px; line-height: 1.5; }
+
+  footer { margin-top: 50px; font-size: 12px; color: var(--ink-soft); font-family: var(--mono); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <nav>
+    <a class="nav-name" href="index.html">WILLIAM BLAKEMORE LYON</a>
+    <div class="nav-links">
+      <a href="index.html#about">About</a>
+      <a href="namibian_worker_assistant.html">Database Tool</a>
+      <a href="index.html#contact">Contact</a>
+    </div>
+  </nav>
+
+  <div class="kicker">RESEARCH OUTPUT</div>
+  <h1>Publications &amp; Talks</h1>
+  <p class="subtitle">Books, articles, datasets, teaching documentation, public writing, and creative collaborations, with talks and conference presentations below. Links go to open access versions where available, or to the publisher/venue page.</p>
+
+  <section class="group">
+    <h2 class="group-title">Book</h2>
+    <div class="pub">
+      <div class="pub-year">2024</div>
+      <div class="pub-body">
+        <div class="pub-title"><a href="https://www.degruyter.com/document/isbn/9783111374659/html" target="_blank" rel="noopener">Forged in Genocide: Migrant Workers Shaping Colonial Capitalism in Namibia, 1890–1925</a></div>
+        <div class="pub-venue">De Gruyter Oldenbourg — Open Access</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="group">
+    <h2 class="group-title">Peer-Reviewed Articles</h2>
+    <div class="pub">
+      <div class="pub-year">—</div>
+      <div class="pub-body">
+        <div class="pub-title no-link">Leveraging Open Source LLMs for Historical Databases of Agricultural Science Research <span class="pub-status">IN PEER REVIEW</span></div>
+        <div class="pub-venue">Journal of Digital History (co-author)</div>
+      </div>
+    </div>
+    <div class="pub">
+      <div class="pub-year">—</div>
+      <div class="pub-body">
+        <div class="pub-title no-link">How Ghana Became a Rice Eating Nation: Centring Consumer Preferences in a Changing Society, 1972–2001 <span class="pub-status">IN PREPARATION</span></div>
+        <div class="pub-venue">Manuscript in revision</div>
+      </div>
+    </div>
+    <div class="pub">
+      <div class="pub-year">2021</div>
+      <div class="pub-body">
+        <div class="pub-title"><a href="https://www.tandfonline.com/doi/full/10.1080/03057070.2021.1851972" target="_blank" rel="noopener">From Labour Elites to Garveyites: West African Migrant Labour in Namibia, 1892–1925</a></div>
+        <div class="pub-venue">Journal of Southern African Studies, 47(1) — Open Access</div>
+      </div>
+    </div>
+    <div class="pub">
+      <div class="pub-year">2021</div>
+      <div class="pub-body">
+        <div class="pub-title"><a href="https://www.tandfonline.com/doi/full/10.1080/03057070.2021.1859795" target="_blank" rel="noopener">Balancing the Scales: Re-Centring Labour and Labourers in Namibian History</a></div>
+        <div class="pub-venue">Journal of Southern African Studies (co-author)</div>
+      </div>
+    </div>
+    <div class="pub">
+      <div class="pub-year">2021</div>
+      <div class="pub-body">
+        <div class="pub-title"><a href="https://www.academia.edu/50850659/Historical_writing_and_the_global_turn_perspectives_from_a_historian_of_Africa" target="_blank" rel="noopener">Historical Writing and the Global Turn: Perspectives from a Historian of Africa</a></div>
+        <div class="pub-venue">Esboços: Histórias em Contextos Globais (co-author)</div>
+      </div>
+    </div>
+    <div class="pub">
+      <div class="pub-year">2019</div>
+      <div class="pub-body">
+        <div class="pub-title"><a href="https://upjournals.up.ac.za/index.php/historia/article/view/800" target="_blank" rel="noopener">Microsoft Power BI Desktop: A Free and User-Friendly Software Programme for Data Visualisations in the Social Sciences</a></div>
+        <div class="pub-venue">Historia: Journal of the Historical Association of South Africa</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="group">
+    <h2 class="group-title">Edited Volumes</h2>
+    <div class="pub">
+      <div class="pub-year">2021</div>
+      <div class="pub-body">
+        <div class="pub-title"><a href="https://www.tandfonline.com/toc/cjss20/47/1" target="_blank" rel="noopener">Special Edition on Namibian Labour History</a></div>
+        <div class="pub-venue">Journal of Southern African Studies, 47(1) (co-editor)</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="group">
+    <h2 class="group-title">Dataset</h2>
+    <div class="pub">
+      <div class="pub-year">2024</div>
+      <div class="pub-body">
+        <div class="pub-title"><a href="https://edoc.hu-berlin.de/handle/18452/29099" target="_blank" rel="noopener">Namibian Worker Database</a></div>
+        <div class="pub-venue">edoc-Server, Humboldt-Universität zu Berlin · DOI: 10.18452/28347 · CC BY 4.0</div>
+        <div class="pub-note">Explore this dataset interactively via the research assistant tool on this site.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="group">
+    <h2 class="group-title">Teaching &amp; Open Educational Resources</h2>
+    <div class="pub">
+      <div class="pub-year">2024</div>
+      <div class="pub-body">
+        <div class="pub-title"><a href="https://inselderforschung.blogs.uni-hamburg.de/2024/09/19/little-research-value-seeking-to-understand-migrant-labors-past-and-how-it-affects-the-present/" target="_blank" rel="noopener">"Little Research Value?": Seeking to Understand Migrant Labour's Past and How It Affects the Present</a></div>
+        <div class="pub-venue">Insel der Forschung, Universität Hamburg — HUL Good-Practice documentation</div>
+        <div class="pub-note">Student research outcomes published at <a href="https://southernafricanperspectives.wordpress.com/" target="_blank" rel="noopener">southernafricanperspectives.wordpress.com</a></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="group">
+    <h2 class="group-title">Book Reviews</h2>
+    <div class="pub">
+      <div class="pub-year">2025</div>
+      <div class="pub-body">
+        <div class="pub-title"><a href="https://www.comparativ.net/v2/article/view/3489" target="_blank" rel="noopener">Review of Empire's Violent End</a></div>
+        <div class="pub-venue">ed. Thijs Brocades Zaalberg &amp; Bart Luttikhuis, Comparativ</div>
+      </div>
+    </div>
+    <div class="pub">
+      <div class="pub-year">2020</div>
+      <div class="pub-body">
+        <div class="pub-title"><a href="https://www.hsozkult.de/publicationreview/id/reb-29347" target="_blank" rel="noopener">Review of Violence as Usual</a></div>
+        <div class="pub-venue">by Marie Muschalek, H-Soz-Kult</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="group">
+    <h2 class="group-title">Public Writing &amp; Media</h2>
+    <div class="pub">
+      <div class="pub-year">2018</div>
+      <div class="pub-body">
+        <div class="pub-title"><a href="https://know.namibianhistory.com/a-shift-in-post-colonial-namibian-german-relations-or-the-status-quo/" target="_blank" rel="noopener">A shift in post-colonial Namibian-German relations or the status quo?</a></div>
+        <div class="pub-venue">The Namibian</div>
+      </div>
+    </div>
+    <div class="pub">
+      <div class="pub-year">2018</div>
+      <div class="pub-body">
+        <div class="pub-title"><a href="https://www.namibian.com.na/italian-workers-in-colonial-namibia-1904-to-1925/" target="_blank" rel="noopener">Italian workers in colonial Namibia, 1904 to 1925</a></div>
+        <div class="pub-venue">The Namibian</div>
+      </div>
+    </div>
+    <div class="pub">
+      <div class="pub-year">2017</div>
+      <div class="pub-body">
+        <div class="pub-title"><a href="https://www.visual-history.de/project/on-the-other-side-of-the-camera-contract-laborers-in-namibia-from-1897-1920/" target="_blank" rel="noopener">On the Other Side of the Camera: Contract Laborers in Namibia from 1897–1920</a></div>
+        <div class="pub-venue">Visual History. Institutions and Media of Visual Memory</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <div class="kicker">BEYOND ACADEMIA</div>
+  <h2 style="font-family:var(--serif); font-size:22px; margin: 6px 0 20px; font-weight:600;">Creative &amp; Public Collaborations</h2>
+
+  <section class="group" style="margin-bottom:0;">
+    <div class="pub">
+      <div class="pub-year">2025</div>
+      <div class="pub-body">
+        <div class="pub-title"><a href="https://archive-books-berlin.myshopify.com/products/ongopolo-foroman-by-tuli-mekondjo" target="_blank" rel="noopener">Tuli Mekondjo — Ongopolo Foroman: Phase I</a></div>
+        <div class="pub-venue">Villa Romana Collection, Archive Books Berlin</div>
+        <div class="pub-note">Contributor (non-poetry text). A booklet on the work of Namibian artist Tuli Mekondjo (2023 Villa Romana Fellow), created together with Elena Agudio and poet Prince Marenga. Funded by the Federal Government Commissioner for Culture and the Media, Deutsche Bank Stiftung, and Bao Stiftung.</div>
+        <div class="pub-note" style="margin-top:6px;">This text is set to accompany related Ongopolo Foroman artworks at the <strong>Sharjah Biennale 17 (2027)</strong>, curated by Paula Nascimento. <span class="pub-status">FORTHCOMING</span></div>
+      </div>
+    </div>
+    <div class="pub">
+      <div class="pub-year">2020</div>
+      <div class="pub-body">
+        <div class="pub-title"><a href="https://www.youtube.com/watch?v=ttGPYTRMGf4" target="_blank" rel="noopener">Diamonds or Self-Determination? — South West African Nationalism</a></div>
+        <div class="pub-venue">The Great War (YouTube), Season 7, Episode 3 — Researcher &amp; Scriptwriter</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <h2 style="font-family:var(--serif); font-size:22px; margin: 0 0 20px; font-weight:600;">Selected Talks &amp; Conferences</h2>
+  <div class="talks-list">
+    <div class="pub">
+      <div class="pub-year">2026</div>
+      <div class="pub-body">Featured Speaker, "Labour, Migration and Genocide: A Social History of Railway Construction in Colonial Namibia under German Rule" — <em>After Restitution. Museums as Archives for New African Histories</em>, University of Bern</div>
+    </div>
+    <div class="pub">
+      <div class="pub-year">2026</div>
+      <div class="pub-body">Panelist, "Extractive Economies: Labor and Mining" — <em>Interdisciplinary Discussions about Sites and Modes of Extraction in Namibia</em> Workshop, 15 July 2026, Freiburg Institute for Advanced Studies (FRIAS)</div>
+    </div>
+    <div class="pub">
+      <div class="pub-year">2025</div>
+      <div class="pub-body">Co-organiser, "Ideal Agriculture and its Afro-Asian Realities" workshop, Universität Zürich</div>
+    </div>
+    <div class="pub">
+      <div class="pub-year">2025</div>
+      <div class="pub-body">Book launch, <em>Forged in Genocide</em>, Universität Zürich</div>
+    </div>
+    <div class="pub">
+      <div class="pub-year">2025</div>
+      <div class="pub-body">"The Human Infrastructure of the Namibian War..." — Research Seminar 'African History', Universität Basel</div>
+    </div>
+    <div class="pub">
+      <div class="pub-year">2024</div>
+      <div class="pub-body">Co-organiser, "Crops and Politics between Africa and Asia" workshop, Wageningen University</div>
+    </div>
+    <div class="pub">
+      <div class="pub-year">2024</div>
+      <div class="pub-body">"How Ghana Became a Rice Nation..." — IHR Food History Seminar, University of London</div>
+    </div>
+    <div class="pub">
+      <div class="pub-year">2023</div>
+      <div class="pub-body">"Before Ponzi, There was Zarossi..." — <em>Atlantic Crossings</em> Workshop</div>
+    </div>
+    <div class="pub">
+      <div class="pub-year">2023</div>
+      <div class="pub-body">"The Pan-Africanism of Jollof Rice," Historical Seminar, Universität Bern</div>
+    </div>
+    <div class="pub">
+      <div class="pub-year">2023</div>
+      <div class="pub-body">"Namibian Labor Empire..." Historisches Seminar, Universität Freiburg</div>
+    </div>
+    <div class="pub">
+      <div class="pub-year">2022</div>
+      <div class="pub-body"><a href="https://nomadit.co.uk/conference/vad2022/paper/64017" target="_blank" rel="noopener">"Centring Ovambo Labourers in Colonial Namibian History under German Rule..."</a> — African Studies Association Germany (VAD) Conference</div>
+    </div>
+    <div class="pub">
+      <div class="pub-year">2021</div>
+      <div class="pub-body">"Namibian Migrant Labor Empire, 1892–1925," Swiss African History Day, Basel</div>
+    </div>
+    <div class="pub">
+      <div class="pub-year">2021</div>
+      <div class="pub-body">"Fear and Labor in the Namib..." — <em>Colonial Capitalism in Action</em> (Online)</div>
+    </div>
+    <div class="pub">
+      <div class="pub-year">2020</div>
+      <div class="pub-body">Co-organiser, Internationalism in the (Long) 20th Century Workshop, Re:work, Berlin</div>
+    </div>
+    <div class="pub">
+      <div class="pub-year">2020</div>
+      <div class="pub-body">"Construction Sites as Colonial Contact Zones..." — European University Institute, Florence</div>
+    </div>
+    <div class="pub">
+      <div class="pub-year">2020</div>
+      <div class="pub-body">"Southern African Perspectives, A Student-Based Research Project" — 7th Namibia Research Day, Basel</div>
+    </div>
+    <div class="pub">
+      <div class="pub-year">2019</div>
+      <div class="pub-body">"Global Migrant Labor in Namibia 1894–1925," Re:work Summer School, Addis Ababa</div>
+    </div>
+  </div>
+
+  <footer>
+    Full CV available on request. Last updated 2026.
+  </footer>
+
+</div>
+</body>
+</html>

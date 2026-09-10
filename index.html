@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>William Blakemore Lyon — Historian &amp; Digital Humanist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: light only;
+    --ink: #1a1f1a;
+    --ink-soft: #444d40;
+    --paper: #eee7d6;
+    --paper-raised: #f6f1e4;
+    --line: #c9bfa4;
+    --accent: #8a4b2e;
+    --accent-soft: #d8c9a8;
+    --sage: #46543f;
+    --serif: 'Source Serif 4', Georgia, serif;
+    --mono: 'IBM Plex Mono', 'Courier New', monospace;
+    --sans: 'Inter', -apple-system, sans-serif;
+  }
+  html { color-scheme: light only; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--ink); overflow-x: hidden; }
+  body { font-family: var(--sans); color: var(--ink); display: flex; justify-content: center; }
+  a { color: inherit; }
+
+  .page {
+    width: 100%;
+    max-width: 900px;
+    background: var(--paper);
+    min-height: 100vh;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+  }
+
+  /* ---------- Nav ---------- */
+  nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 22px 56px;
+    border-bottom: 1px solid var(--line);
+    font-family: var(--mono);
+    font-size: 12.5px;
+  }
+  nav .nav-name { letter-spacing: 0.04em; color: var(--ink); }
+  nav .nav-links a {
+    text-decoration: none;
+    color: var(--ink-soft);
+    margin-left: 22px;
+    border-bottom: 1px solid transparent;
+  }
+  nav .nav-links a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+  @media (max-width: 640px) {
+    nav { flex-direction: column; align-items: flex-start; gap: 10px; padding: 20px 22px; }
+    nav .nav-links a { margin-left: 0; margin-right: 16px; }
+  }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    padding: 64px 56px 50px;
+    display: flex;
+    align-items: center;
+    gap: 44px;
+  }
+  @media (max-width: 640px) { .hero { padding: 40px 22px 34px; flex-direction: column-reverse; gap: 26px; } }
+  .hero-text { flex: 1; min-width: 0; }
+  .hero-photo {
+    flex-shrink: 0;
+    width: 170px;
+    height: 170px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid var(--paper-raised);
+    box-shadow: 0 0 0 1px var(--line);
+  }
+  .hero-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  @media (max-width: 640px) { .hero-photo { width: 130px; height: 130px; } }
+  .kicker { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; color: var(--accent); }
+  .hero h1 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 40px;
+    line-height: 1.2;
+    margin: 10px 0 0;
+    max-width: 16ch;
+  }
+  .hero .tagline {
+    font-size: 16px;
+    color: var(--ink-soft);
+    max-width: 56ch;
+    line-height: 1.6;
+    margin-top: 16px;
+  }
+  .hero .cta-row { margin-top: 26px; display: flex; gap: 14px; flex-wrap: wrap; }
+  .btn {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.03em;
+    padding: 11px 18px;
+    text-decoration: none;
+    border: 1px solid var(--ink);
+  }
+  .btn-solid { background: var(--ink); color: var(--paper); }
+  .btn-solid:hover { background: var(--accent); border-color: var(--accent); }
+  .btn-outline { color: var(--ink); }
+  .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+  hr.rule { border: none; border-top: 1px solid var(--line); margin: 0; }
+
+  /* ---------- Section shared ---------- */
+  section.block { padding: 46px 56px; border-bottom: 1px solid var(--line); }
+  @media (max-width: 640px) { section.block { padding: 34px 22px; } }
+  section.block:last-of-type { border-bottom: none; }
+  h2.section-title {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    letter-spacing: 0.06em;
+    color: var(--sage);
+    text-transform: uppercase;
+    margin: 0 0 18px;
+  }
+
+  /* ---------- About ---------- */
+  .about-text { font-size: 15px; line-height: 1.75; max-width: 65ch; }
+  .about-text p { margin: 0 0 16px; }
+  .about-text p:last-child { margin-bottom: 0; }
+
+  /* ---------- Featured project card ---------- */
+  .project-card {
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    padding: 26px 28px;
+  }
+  .project-card h3 {
+    font-family: var(--serif);
+    font-size: 21px;
+    font-weight: 600;
+    margin: 0 0 10px;
+  }
+  .project-card p { font-size: 14.5px; line-height: 1.65; color: var(--ink-soft); margin: 0 0 16px; }
+  .project-stats {
+    display: flex;
+    gap: 26px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .project-stats strong { color: var(--ink); display: block; font-size: 16px; }
+
+  /* ---------- Publications preview ---------- */
+  .pub-preview { border-top: 1px dotted var(--line); padding: 13px 0; font-size: 14.5px; }
+  .pub-preview:first-of-type { border-top: none; }
+  .pub-preview .py { font-family: var(--mono); font-size: 12px; color: var(--ink-soft); margin-right: 10px; }
+  .pub-preview .pt { font-weight: 600; }
+  .pub-preview .pv { color: var(--ink-soft); font-style: italic; font-size: 13.5px; }
+  .see-all { display: inline-block; margin-top: 18px; font-family: var(--mono); font-size: 12.5px; color: var(--accent); text-decoration: none; border-bottom: 1px dotted var(--accent); }
+
+  /* ---------- Beyond academia strip ---------- */
+  .beyond-strip { font-size: 14.5px; line-height: 1.7; color: var(--ink-soft); max-width: 65ch; }
+  .beyond-strip strong { color: var(--ink); }
+
+  /* ---------- Contact ---------- */
+  .contact-row { display: flex; gap: 40px; flex-wrap: wrap; font-size: 14.5px; }
+  .contact-item .label { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.05em; color: var(--sage); display: block; margin-bottom: 4px; }
+  .contact-item a { color: var(--ink); text-decoration: none; border-bottom: 1px dotted var(--ink-soft); }
+  .contact-item a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  footer { padding: 24px 56px 40px; font-family: var(--mono); font-size: 11.5px; color: var(--ink-soft); }
+  @media (max-width: 640px) { footer { padding: 20px 22px 32px; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <nav>
+    <div class="nav-name">WILLIAM BLAKEMORE LYON</div>
+    <div class="nav-links">
+      <a href="#about">About</a>
+      <a href="#project">Database Tool</a>
+      <a href="publications.html">Publications</a>
+      <a href="#contact">Contact</a>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <div class="hero-text">
+      <div class="kicker">HISTORIAN · DIGITAL HUMANIST</div>
+      <h1>History that reaches beyond the archive.</h1>
+      <p class="tagline">I research labor, migration, and everyday life across colonial and postcolonial Africa — from genocide and forced labor in Namibia to food and consumption in Ghana and West Africa — and build digital tools that put that research directly in the hands of the descendants, students, and readers it belongs to, not just other historians.</p>
+      <div class="cta-row">
+        <a class="btn btn-solid" href="#project">Explore the Namibian Worker Database →</a>
+        <a class="btn btn-outline" href="publications.html">View Publications</a>
+      </div>
+    </div>
+    <div class="hero-photo">
+      <img src="assets/portrait.jpg" alt="Portrait of William Blakemore Lyon">
+    </div>
+  </div>
+
+  <hr class="rule">
+
+  <section class="block" id="about">
+    <h2 class="section-title">About</h2>
+    <div class="about-text">
+      <p>My work centers ordinary people's labor and everyday lives rather than states or statistics. In Namibia, that means recovering the names, wages, and deaths of colonial-era migrant workers from estate files never intended to preserve their individual stories. In Ghana and West Africa, it means centering ordinary consumers' diets and choices within the food history of an independent nation — a story usually told through policy, not people.</p>
+      <p>I hold a PhD <em>magna cum laude</em> in African Studies from Humboldt-Universität zu Berlin, where my dissertation became my first book, <em>Forged in Genocide: Migrant Workers Shaping Colonial Capitalism in Namibia, 1890–1925</em> (De Gruyter, Open Access). The book — and the archival database behind it — centers the lives of migrant laborers whose deaths, wages, and stolen belongings were recorded in colonial estate files never meant to be read as history.</p>
+      <p>Since then, my work has increasingly focused on <strong>digital methods and open access</strong> as historical practice, not just presentation: teaching Power BI to historians without institutional resources, co-developing an LLM-assisted research database during a postdoc at the Universität Zürich, and — most recently — building a conversational research tool so that the Namibian Worker Database can be explored by anyone, not only those trained to read a colonial archive.</p>
+    </div>
+  </section>
+
+  <section class="block" id="project">
+    <h2 class="section-title">Featured Project</h2>
+    <div class="project-card">
+      <h3>Namibian Worker Database — Research Assistant</h3>
+      <div class="project-stats">
+        <div><strong>1,153</strong>archival records</div>
+        <div><strong>28</strong>ethnic groups recorded</div>
+        <div><strong>1892–1925</strong>period covered</div>
+      </div>
+      <p>An interactive tool built on the archival database underlying <em>Forged in Genocide</em>. Ask a question in plain language — about an individual, a mine, a cause of death, or a pattern across the archive — and get an answer grounded directly in the cleaned dataset, cited to its original archival file in the same format used in the book.</p>
+      <a class="btn btn-solid" href="namibian_worker_assistant.html">Try the tool →</a>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2 class="section-title">Selected Publications</h2>
+    <div class="pub-preview">
+      <span class="py">2024</span><span class="pt">Forged in Genocide: Migrant Workers Shaping Colonial Capitalism in Namibia, 1890–1925</span><br>
+      <span class="pv">De Gruyter Oldenbourg — Open Access</span>
+    </div>
+    <div class="pub-preview">
+      <span class="py">2019</span><span class="pt">Microsoft Power BI Desktop: A Free and User-Friendly Software Programme for Data Visualisations in the Social Sciences</span><br>
+      <span class="pv">Historia: Journal of the Historical Association of South Africa</span>
+    </div>
+    <div class="pub-preview">
+      <span class="py">—</span><span class="pt">Leveraging Open Source LLMs for Historical Databases of Agricultural Science Research</span>
+      <span style="display:inline-block; font-family: var(--mono); font-size: 10px; letter-spacing: 0.03em; background: var(--accent-soft); color: var(--ink); padding: 1px 7px; margin-left: 8px; vertical-align: middle;">IN PEER REVIEW</span><br>
+      <span class="pv">Journal of Digital History (co-author)</span>
+    </div>
+    <div class="pub-preview">
+      <span class="py">2024</span><span class="pt">Namibian Worker Database</span><br>
+      <span class="pv">edoc-Server, Humboldt-Universität zu Berlin · DOI: 10.18452/28347</span>
+    </div>
+    <a class="see-all" href="publications.html">See all publications &amp; talks →</a>
+  </section>
+
+  <section class="block">
+    <h2 class="section-title">Beyond Academia</h2>
+    <p class="beyond-strip">I also collaborate with contemporary Namibian artists — most recently as a contributing writer on <strong>Tuli Mekondjo — Ongopolo Foroman: Phase I</strong> (Villa Romana Collection, Archive Books Berlin), alongside Elena Agudio and poet Prince Marenga. That text is now also set to accompany related artworks at the <strong>Sharjah Biennale 17 (2027)</strong>, curated by Paula Nascimento. <a class="see-all" style="margin-top:0;" href="publications.html">More on the Publications page →</a></p>
+  </section>
+
+  <section class="block" id="contact" style="border-bottom:none;">
+    <h2 class="section-title">Contact</h2>
+    <div class="contact-row">
+      <div class="contact-item">
+        <span class="label">EMAIL</span>
+        <a href="mailto:wmblyon@me.com">wmblyon@me.com</a>
+      </div>
+      <div class="contact-item">
+        <span class="label">LOCATION</span>
+        Freiburg im Breisgau, Germany
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    © 2026 William Blakemore Lyon
+  </footer>
+
+</div>
+</body>
+</html>
