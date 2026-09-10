@@ -4,18 +4,28 @@
 // the visitor's browser — so your API key stays hidden here and is never
 // exposed to anyone viewing your website's source code.
 //
-// This version calls Together AI, which hosts open-weight models (Llama 3.3,
-// in this case) rather than a closed proprietary model — chosen deliberately
-// to match the open-access argument in "Leveraging Open Source LLMs for
-// Historical Databases of Agricultural Science Research." Together AI is
-// also the company behind the RedPajama open training-data project, widely
-// cited in open-source ML research.
+// This version calls Mistral AI's "La Plateforme", using Mistral Small 4 —
+// a genuinely open-weight model (Apache 2.0 license, weights on Hugging
+// Face) rather than a closed proprietary model — chosen deliberately to
+// match the open-access argument in "Leveraging Open Source LLMs for
+// Historical Databases of Agricultural Science Research." Mistral AI is
+// also a Paris-based, European company — a reasonable fit for a project
+// situated in a German university context.
+//
+// NOTE: Mistral retires older model endpoints periodically (e.g., the
+// original open-mixtral-8x7b was retired 3/30/2025). Using the "-latest"
+// alias below, rather than a dated version string, means this keeps
+// pointing at Mistral's current open Small model without needing a code
+// change every time they release a new version. If you ever see errors,
+// check https://docs.mistral.ai/models for the current recommended alias.
 //
 // SETUP:
-// 1. Get an API key from https://api.together.ai (Settings > API Keys).
-//    New accounts get $5 in free credit — plenty for this project's scale.
+// 1. Get an API key from https://console.mistral.ai (API Keys section).
+//    Note: Mistral may ask you to activate billing before issuing a key,
+//    even to use free-tier-eligible models — check current requirements
+//    when you sign up.
 // 2. In your Vercel project settings, add an Environment Variable:
-//      Name:  TOGETHER_API_KEY
+//      Name:  MISTRAL_API_KEY
 //      Value: (paste your key)
 // 3. Deploy. This file becomes reachable at:  https://your-site.vercel.app/api/chat
 //
@@ -26,7 +36,7 @@
 //   (b) The MAX_TOKENS and basic rate-limit below keep any single response
 //       cheap and slow down rapid repeated requests from the same visitor.
 
-const MODEL = "meta-llama/Llama-3.3-70B-Instruct-Turbo";
+const MODEL = "mistral-small-latest";
 const MAX_TOKENS = 700;
 
 // Extremely simple in-memory rate limit: max 15 requests per minute per IP.
@@ -59,16 +69,16 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing "message" in request body.' });
   }
 
-  if (!process.env.TOGETHER_API_KEY) {
-    return res.status(500).json({ error: 'Server is missing TOGETHER_API_KEY. Set it in your Vercel project settings.' });
+  if (!process.env.MISTRAL_API_KEY) {
+    return res.status(500).json({ error: 'Server is missing MISTRAL_API_KEY. Set it in your Vercel project settings.' });
   }
 
   try {
-    const togetherRes = await fetch('https://api.together.xyz/v1/chat/completions', {
+    const mistralRes = await fetch('https://api.mistral.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.TOGETHER_API_KEY}`,
+        'Authorization': `Bearer ${process.env.MISTRAL_API_KEY}`,
       },
       body: JSON.stringify({
         model: MODEL,
@@ -80,13 +90,13 @@ export default async function handler(req, res) {
       }),
     });
 
-    const data = await togetherRes.json();
+    const data = await mistralRes.json();
 
-    if (!togetherRes.ok) {
-      return res.status(togetherRes.status).json({ error: data });
+    if (!mistralRes.ok) {
+      return res.status(mistralRes.status).json({ error: data });
     }
 
-    // Normalize Together's OpenAI-style response shape into the same shape
+    // Normalize Mistral's OpenAI-style response shape into the same shape
     // the frontend already expects (so no client-side code needs to change):
     //   { content: [ { type: "text", text: "..." } ] }
     const text = data?.choices?.[0]?.message?.content || '';
@@ -95,5 +105,6 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: String(err) });
   }
 }
+
 
 
