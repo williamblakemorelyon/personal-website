@@ -329,7 +329,7 @@
     <div class="concept-box">
       Built from the dataset underlying <em>Forged in Genocide: Migrant Workers Shaping Colonial Capitalism in Namibia, 1890–1925</em> (De Gruyter) and "From Labour Elites to Garveyites" (<em>JSAS</em>, 2021).
       <br><br>
-      Powered by an open-weight model (Llama 3.3), in keeping with the open-access argument in "Leveraging Open Source LLMs for Historical Databases of Agricultural Science Research."
+      Powered by an open-weight model (Mistral Small 4, via Mistral AI), in keeping with the open-access argument in "Leveraging Open Source LLMs for Historical Databases of Agricultural Science Research."
       <br><br>
       All monetary figures are standardized to Pound sterling (£) from original multi-currency records; minor inaccuracies from this conversion are possible.
       <br><br>
@@ -649,7 +649,7 @@ function datasetCitation() {
 
 // ---------------- Backend proxy call ----------------
 // IMPORTANT: this calls YOUR OWN backend (/api/chat), which in turn calls
-// Together AI's hosted Llama 3.3 model (an open-weight model, not Claude/Anthropic).
+// Mistral AI's hosted open-weight Mistral Small 4 model (not Claude/Anthropic).
 // This means the live chat feature will only work once this site is deployed
 // with the /api/chat serverless function running (see /api/chat.js for setup).
 // It will NOT work when just previewing this file in the Claude.ai artifact
