@@ -1,47 +1,37 @@
 // api/chat.js
 //
 // This is a Vercel Serverless Function. It runs on Vercel's servers, not in
-// the visitor's browser — so your API key stays hidden here and is never
-// exposed to anyone viewing your website's source code.
-//
-// This version calls Mistral AI's "La Plateforme", using Mistral Small 4 —
-// a genuinely open-weight model (Apache 2.0 license, weights on Hugging
-// Face) rather than a closed proprietary model — chosen deliberately to
-// match the open-access argument in "Leveraging Open Source LLMs for
-// Historical Databases of Agricultural Science Research." Mistral AI is
-// also a Paris-based, European company — a reasonable fit for a project
-// situated in a German university context.
-//
-// NOTE: Mistral retires older model endpoints periodically (e.g., the
-// original open-mixtral-8x7b was retired 3/30/2025). Using the "-latest"
-// alias below, rather than a dated version string, means this keeps
-// pointing at Mistral's current open Small model without needing a code
-// change every time they release a new version. If you ever see errors,
-// check https://docs.mistral.ai/models for the current recommended alias.
+// the visitor's browser — so your Anthropic API key stays hidden here and is
+// never exposed to anyone viewing your website's source code.
 //
 // SETUP:
-// 1. Get an API key from https://console.mistral.ai (API Keys section).
-//    Note: Mistral may ask you to activate billing before issuing a key,
-//    even to use free-tier-eligible models — check current requirements
-//    when you sign up.
+// 1. Get an API key from https://console.anthropic.com (Settings > API Keys).
 // 2. In your Vercel project settings, add an Environment Variable:
-//      Name:  MISTRAL_API_KEY
+//      Name:  ANTHROPIC_API_KEY
 //      Value: (paste your key)
 // 3. Deploy. This file becomes reachable at:  https://your-site.vercel.app/api/chat
 //
+// NOTE: this project's original goal was to use an open-weight, ideally
+// European-hosted model (see FUTURE_PLANS.md) to match the open-access
+// argument in "Leveraging Open Source LLMs for Historical Databases of
+// Agricultural Science Research." This Anthropic/Claude version is a
+// pragmatic fallback after hitting real friction with Mistral AI (a
+// retired model, then unclear free-tier rate limits) — reverted to here to
+// keep the live demo working, with the open/European swap revisited later.
+//
 // SAFETY NOTE: this endpoint is public — anyone visiting your live site can
-// trigger it. Two easy safeguards:
-//   (a) Only load a small amount of credit and don't enable auto-recharge —
-//       spending simply stops once the balance runs out.
+// trigger it, which means anyone could send it requests and use your API
+// budget. Two easy safeguards:
+//   (a) In the Anthropic Console, set a monthly spending limit on this key.
 //   (b) The MAX_TOKENS and basic rate-limit below keep any single response
 //       cheap and slow down rapid repeated requests from the same visitor.
 
-const MODEL = "mistral-small-latest";
 const MAX_TOKENS = 700;
 
 // Extremely simple in-memory rate limit: max 15 requests per minute per IP.
 // Resets whenever the function cold-starts, so it's a soft speed bump,
-// not a hard security guarantee.
+// not a hard security guarantee — the spending cap in (a) above is your
+// real safety net.
 const requestLog = new Map();
 
 function isRateLimited(ip) {
@@ -69,42 +59,34 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing "message" in request body.' });
   }
 
-  if (!process.env.MISTRAL_API_KEY) {
-    return res.status(500).json({ error: 'Server is missing MISTRAL_API_KEY. Set it in your Vercel project settings.' });
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return res.status(500).json({ error: 'Server is missing ANTHROPIC_API_KEY. Set it in your Vercel project settings.' });
   }
 
   try {
-    const mistralRes = await fetch('https://api.mistral.ai/v1/chat/completions', {
+    const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.MISTRAL_API_KEY}`,
+        'x-api-key': process.env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: MODEL,
+        model: 'claude-sonnet-4-6',
         max_tokens: MAX_TOKENS,
-        messages: [
-          ...(system ? [{ role: 'system', content: system }] : []),
-          { role: 'user', content: message },
-        ],
+        system: system || undefined,
+        messages: [{ role: 'user', content: message }],
       }),
     });
 
-    const data = await mistralRes.json();
+    const data = await anthropicRes.json();
 
-    if (!mistralRes.ok) {
-      return res.status(mistralRes.status).json({ error: data });
+    if (!anthropicRes.ok) {
+      return res.status(anthropicRes.status).json({ error: data });
     }
 
-    // Normalize Mistral's OpenAI-style response shape into the same shape
-    // the frontend already expects (so no client-side code needs to change):
-    //   { content: [ { type: "text", text: "..." } ] }
-    const text = data?.choices?.[0]?.message?.content || '';
-    return res.status(200).json({ content: [{ type: 'text', text }] });
+    return res.status(200).json(data);
   } catch (err) {
     return res.status(500).json({ error: String(err) });
   }
 }
-
-
-
