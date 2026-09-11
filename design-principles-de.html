@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wie dieses Tool funktioniert — William Blakemore Lyon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: light only;
+    --ink: #1a1f1a; --ink-soft: #444d40; --paper: #eee7d6; --paper-raised: #f6f1e4;
+    --line: #c9bfa4; --accent: #8a4b2e; --accent-soft: #d8c9a8; --sage: #46543f;
+    --serif: 'Source Serif 4', Georgia, serif;
+    --mono: 'IBM Plex Mono', 'Courier New', monospace;
+    --sans: 'Inter', -apple-system, sans-serif;
+  }
+  html { color-scheme: light only; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--ink); overflow-x: hidden; }
+  body { font-family: var(--sans); color: var(--ink); display: flex; justify-content: center; }
+  a { color: inherit; }
+  .page { width: 100%; max-width: 820px; background: var(--paper); min-height: 100vh; box-shadow: 0 12px 40px rgba(0,0,0,0.35); }
+
+  nav {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 22px 56px; border-bottom: 1px solid var(--line);
+    font-family: var(--mono); font-size: 12.5px;
+  }
+  nav .nav-name { letter-spacing: 0.04em; color: var(--ink); text-decoration: none; }
+  nav .nav-links a { text-decoration: none; color: var(--ink-soft); margin-left: 22px; border-bottom: 1px solid transparent; }
+  nav .nav-links a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+  nav .lang-toggle { margin-left: 22px; }
+  nav .lang-toggle a { margin-left: 4px; }
+  nav .lang-toggle .active { color: var(--ink); border-bottom: 1px solid var(--ink); }
+  @media (max-width: 640px) {
+    nav { flex-direction: column; align-items: flex-start; gap: 10px; padding: 20px 22px; }
+    nav .nav-links a { margin-left: 0; margin-right: 16px; }
+    .content { padding: 34px 22px !important; }
+  }
+
+  .content { padding: 48px 56px 70px; }
+  .kicker { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; color: var(--accent); }
+  h1 { font-family: var(--serif); font-weight: 600; font-size: 30px; line-height: 1.25; margin: 10px 0 6px; }
+  .subtitle { font-size: 15px; color: var(--ink-soft); line-height: 1.6; max-width: 62ch; margin-bottom: 36px; }
+
+  h2 { font-family: var(--serif); font-size: 21px; font-weight: 600; margin: 40px 0 14px; }
+  p { font-size: 15px; line-height: 1.7; max-width: 68ch; margin: 0 0 14px; }
+  .principle {
+    background: var(--paper-raised); border: 1px solid var(--line); border-left: 3px solid var(--accent);
+    padding: 20px 24px; margin: 18px 0;
+  }
+  .principle h3 { font-family: var(--mono); font-size: 12px; letter-spacing: 0.04em; color: var(--sage); text-transform: uppercase; margin: 0 0 10px; }
+  .principle p { margin: 0; font-size: 14.5px; }
+  .principle p + p { margin-top: 10px; }
+  a.inline { color: var(--accent); text-decoration: none; border-bottom: 1px dotted var(--accent); }
+  a.inline:hover { border-bottom-style: solid; }
+  footer { padding: 24px 56px 40px; font-family: var(--mono); font-size: 11.5px; color: var(--ink-soft); }
+</style>
+</head>
+<body>
+<div class="page">
+  <nav>
+    <a class="nav-name" href="index-de.html">WILLIAM BLAKEMORE LYON</a>
+    <div class="nav-links">
+      <a href="index-de.html#about">Über mich</a>
+      <a href="namibian_worker_assistant.html">Datenbank-Tool</a>
+      <a href="publications.html">Publikationen</a>
+      <a href="index-de.html#contact">Kontakt</a>
+      <span class="lang-toggle"><a href="design-principles.html">EN</a> | <a href="design-principles-de.html" class="active">DE</a></span>
+    </div>
+  </nav>
+
+  <div class="content">
+    <div class="kicker">HINTERGRUND</div>
+    <h1>Wie dieses Tool funktioniert</h1>
+    <p class="subtitle">Der <a class="inline" href="namibian_worker_assistant.html">Namibian Worker Database Research Assistant</a> nutzt ein generatives KI-Modell — fast jede Design-Entscheidung dabei zielt jedoch darauf ab, dieses Modell einzuschränken, nicht es zur Schau zu stellen. Diese Seite legt diese Entscheidungen offen, denn guter Umgang mit KI bleibt meist unsichtbar, wenn man ihn nicht ausdrücklich festhält.</p>
+
+    <h2>Verankerte Antworten statt freier Generierung</h2>
+    <div class="principle">
+      <h3>Das Modell antwortet nie aus eigenem Allgemeinwissen</h3>
+      <p>Jede Frage durchläuft zunächst einen Retrieval-Schritt, der die tatsächlichen, bereinigten Datensätze nach passenden Stichworten durchsucht. Nur die tatsächlich zutreffenden Archivdatensätze werden an das Modell weitergegeben, mit der ausdrücklichen Anweisung, ausschließlich auf dieser Grundlage zu antworten und offen zu benennen, wenn die Datensätze eine Frage nicht abdecken. Dies folgt einem konkreten Argument aus einer Publikation, die ich derzeit als Koautor verfasse und die sich im Peer-Review-Verfahren befindet: <a class="inline" href="publications.html">"Leveraging Open Source LLMs for Historical Databases of Agricultural Science Research"</a>. Diese Publikation argumentiert, dass Retrieval-Augmented Generation — oder eine vergleichbare Technik — eine grundlegende Anforderung für jede dialogbasierte LLM-Interaktion in der historischen Forschung sei, keine optionale Verfeinerung, sondern die eigentliche Absicherung gegen ein Modell, das Lücken selbstbewusst mit plausibel klingenden, aber unbelegten Behauptungen füllt.</p>
+    </div>
+
+    <h2>Deterministische Antworten, wo es darauf ankommt</h2>
+    <div class="principle">
+      <h3>Zahlen, Statistiken und Diagramme werden berechnet, nicht generiert</h3>
+      <p>Fragen wie "Wie viele Arbeiter starben an Lungenentzündung?" oder Anfragen nach einem Diagramm werden durch direkte Auszählung und Aggregation der zugrundeliegenden Daten im Browser beantwortet — das Sprachmodell ist an der Erzeugung der Zahl selbst nicht beteiligt. Das vermeidet den häufigsten Schwachpunkt KI-gestützter Datentools: eine flüssig und überzeugend klingende Statistik, die im Detail falsch ist. Passt eine Diagrammanfrage zu keiner sauber berechenbaren Dimension, sagt das Tool dies offen und listet auf, was es leisten kann, anstatt stillschweigend ein unpassendes Diagramm zu zeigen.</p>
+    </div>
+
+    <h2>Ehrlicher Umgang mit sensiblem Material</h2>
+    <div class="principle">
+      <h3>Offene Abfrage, kontrollierte Veröffentlichung</h3>
+      <p>Dieser Datensatz enthält reale Todesursachen, Namen von Angehörigen und Nachlassangaben zu realen, verstorbenen Personen — der Datensatz umfasst die Jahre 1892–1925, weshalb heute alle darin erfassten Personen verstorben sind. Das Tool steht für freies Erkunden offen, enthält jedoch einen dauerhaft sichtbaren Hinweis: Wer konkrete persönliche Details in einer Publikation verwenden möchte, wird gebeten, mich vorab zu kontaktieren — eine Rücksprache mit dem Nationalarchiv Namibias wird zusätzlich empfohlen. Dies folgt den <a class="inline" href="https://www.gida-global.org/care" target="_blank" rel="noopener">CARE-Prinzipien</a> für indigene und postkoloniale Daten (Collective Benefit, Authority to Control, Responsibility, Ethics) als notwendige Ergänzung zu den FAIR-Prinzipien — "standardmäßig offen" ist nicht automatisch gleichbedeutend mit "ethisch angemessen".</p>
+    </div>
+
+    <h2>Transparenz über die Grenzen der Daten selbst</h2>
+    <div class="principle">
+      <h3>Währungsumrechnung und Archivbezeichnungen offen benannt statt verborgen</h3>
+      <p>Alle Geldbeträge im Datensatz wurden bei seinem Aufbau aus verschiedenen Originalwährungen in Pfund Sterling umgerechnet, wobei kleinere Ungenauigkeiten möglich sind. Anstatt einen umgerechneten Betrag so darzustellen, als sei er der ursprüngliche Archivwert, machen sowohl die Oberfläche als auch die Anweisungen an das Modell dies ausdrücklich sichtbar. Archivzitate folgen exakt der in <em>Forged in Genocide</em> verwendeten Konvention — voller Name bei erster Nennung je Archiv, danach abgekürzt — automatisch generiert, statt vom Modell nur angenähert.</p>
+    </div>
+
+    <h2>Menschen korrekt darstellen, nicht nur Daten korrekt darstellen</h2>
+    <div class="principle">
+      <h3>Formulierungen zur Ethnizität folgen historischer Konvention, nicht dem Rohdatenfeld</h3>
+      <p>Der Datensatz verzeichnet häufig eine konkrete Ovambo-Teilgruppe neben der übergeordneten Bezeichnung "Ovambo" (z. B. "Oukwanyama; Ovambo"). Historisch identifizierten sich Menschen vor allem mit ihrer konkreten Teilgruppe, nicht allein mit der übergeordneten ethnolinguistischen Kategorie. Das Modell ist entsprechend angewiesen, dies zu formulieren — "ein Ovambo-Mann aus Oukwanyama" —, passend zur Konvention der publizierten Forschung, statt ein unverarbeitetes Datenfeld so darzustellen, als sei es das vollständige Bild der Identität einer Person.</p>
+    </div>
+
+    <h2>Ein Sparringspartner, kein Ersatz für Fachwissen</h2>
+    <div class="principle">
+      <h3>Enge, konkrete Fragen — gestützt auf Fachwissen — statt offener Fragen</h3>
+      <p>"Leveraging Open Source LLMs for Historical Databases of Agricultural Science Research" argumentiert zudem, dass LLMs für Historiker*innen am nützlichsten sind nicht als Ersatz für genaues Lesen und kritisches Urteilsvermögen, sondern als Sparringspartner: am verlässlichsten bei engen, konkreten Fragen, die auf echtem Fachwissen beruhen und im Dialog verfeinert werden, statt einmal gestellt und unhinterfragt übernommen zu werden. Der Aufbau dieses Tools — zunächst gezielt abfragen, dann antworten — setzt diese Idee direkt um: Das Modell arbeitet innerhalb einer begrenzten, konkreten Menge von Datensätzen, statt frei über das gesamte Archiv zu "denken", und Aggregat- bzw. Diagrammantworten werden berechnet statt erschlossen — eben weil manche Fragen besser durch Arithmetik als durch das Urteilsvermögen eines Sprachmodells zu beantworten sind.</p>
+    </div>
+
+    <h2>Was "Open History" tatsächlich verlangt — und wo dieses Tool diesem Anspruch noch nicht genügt</h2>
+    <div class="principle">
+      <h3>Ein anspruchsvoller Maßstab, ehrlich noch nicht vollständig erfüllt</h3>
+      <p>"Leveraging Open Source LLMs for Historical Databases of Agricultural Science Research" entwickelt das Konzept von <strong>Open History</strong>: die Übertragung von Open-Source-, Open-Science- und FAIR-Prinzipien speziell auf LLM-gestützte historische Forschung. Der Anspruch ist tatsächlich hoch — Modelle, die lokal, auf beliebiger verfügbarer Hardware, ohne Abhängigkeit von einem kommerziellen KI-Produkt oder Abonnement laufen, für echte langfristige Reproduzierbarkeit unabhängig vom Fortbestehen oder der Preisgestaltung eines einzelnen Unternehmens.</p>
+      <p>Nach diesem Maßstab erfüllt dieses Tool die Anforderungen noch nicht vollständig. Es läuft derzeit mit Claude; ein früherer Versuch, es auf ein offenes Modell über einen europäischen gehosteten Anbieter (Mistral AI) umzustellen, hätte den Anspruch ebenfalls nicht erfüllt, da jede gehostete API — unabhängig davon, ob die zugrundeliegenden Gewichte offen oder geschlossen sind — weiterhin eine kommerzielle Abonnement-Abhängigkeit darstellt und nicht die im Konzept geforderte selbstgehostete Unabhängigkeit. Dieser Versuch wird hier dokumentiert statt verschwiegen, da die dabei aufgetretenen praktischen Schwierigkeiten (ein eingestelltes Modell, unklare Begrenzungen der kostenlosen Stufe) selbst aufschlussreich sind.</p>
+      <p>Die Version, die diesem Maßstab tatsächlich gerecht würde, wäre ein selbstgehostetes, offenes Modell — ähnlich dem auf h2oGPT/Ollama basierenden Ansatz aus meiner Postdoc-Arbeit an der Rice-Knowledge-Datenbank an der Universität Zürich —, betrieben auf lokaler oder institutioneller Hardware. Dies bleibt die konkrete Richtung für die nächste Version dieses Tools, keine verworfene Idee, und entspricht sowohl den an europäischen Universitäten zunehmend relevanten Prioritäten der Datensouveränität als auch meinem eigenen Hintergrund und meinen Zielen im Bereich quelloffener, frei zugänglicher digitaler Methoden.</p>
+    </div>
+
+    <h2>Lizenzierung</h2>
+    <p>Die zugrundeliegende <a class="inline" href="https://edoc.hu-berlin.de/handle/18452/29099" target="_blank" rel="noopener">Namibian Worker Database</a> steht unter <strong>CC BY 4.0</strong>. Der Code dieses Tools folgt demselben offenen Grundsatz; die Dokumentation des Datensatzes selbst (verlinkt auf der <a class="inline" href="namibian_worker_assistant.html">Tool-Seite</a>) hält die konkreten Entscheidungen zu Datenbereinigung und Zitierweise fest.</p>
+  </div>
+
+  <footer>Zuletzt aktualisiert 2026.</footer>
+</div>
+</body>
+</html>
