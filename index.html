@@ -53,6 +53,9 @@
     border-bottom: 1px solid transparent;
   }
   nav .nav-links a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+  nav .lang-toggle { margin-left: 22px; }
+  nav .lang-toggle a { margin-left: 4px; }
+  nav .lang-toggle .active { color: var(--ink); border-bottom: 1px solid var(--ink); }
   @media (max-width: 640px) {
     nav { flex-direction: column; align-items: flex-start; gap: 10px; padding: 20px 22px; }
     nav .nav-links a { margin-left: 0; margin-right: 16px; }
@@ -186,6 +189,7 @@
       <a href="#project">Database Tool</a>
       <a href="publications.html">Publications</a>
       <a href="#contact">Contact</a>
+      <span class="lang-toggle"><a href="index.html" class="active">EN</a> | <a href="index-de.html">DE</a></span>
     </div>
   </nav>
 
@@ -211,7 +215,7 @@
     <div class="about-text">
       <p>My work centers ordinary people's labor and everyday lives rather than states or statistics. In Namibia, that means recovering the names, wages, and deaths of colonial-era migrant workers from estate files never intended to preserve their individual stories. In Ghana and West Africa, it means centering ordinary consumers' diets and choices within the food history of an independent nation — a story usually told through policy, not people.</p>
       <p>I hold a PhD <em>magna cum laude</em> in African Studies from Humboldt-Universität zu Berlin, where my dissertation became my first book, <em>Forged in Genocide: Migrant Workers Shaping Colonial Capitalism in Namibia, 1890–1925</em> (De Gruyter, Open Access). The book — and the archival database behind it — centers the lives of migrant laborers whose deaths, wages, and stolen belongings were recorded in colonial estate files never meant to be read as history.</p>
-      <p>Since then, my work has increasingly focused on <strong>digital methods and open access</strong> as historical practice, not just presentation: teaching Power BI to historians without institutional resources, running <a href="https://southernafricanperspectives.wordpress.com/" target="_blank" rel="noopener">Southern African Perspectives</a> — an ongoing public research project with students — co-developing an LLM-assisted research database during a postdoc at the Universität Zürich, and — most recently — building a conversational research tool so that the Namibian Worker Database can be explored by anyone, not only those trained to read a colonial archive.</p>
+      <p>My interest in <strong>digital methods and open access</strong> as historical practice, not just presentation, began during my PhD — teaching Power BI to historians without institutional resources, and running <a href="https://southernafricanperspectives.wordpress.com/" target="_blank" rel="noopener">Southern African Perspectives</a>, an ongoing public research project with students — and has only grown since: co-developing an LLM-assisted research database during a postdoc at the Universität Zürich, and, most recently, building a conversational research tool so that the Namibian Worker Database can be explored by anyone, not only those trained to read a colonial archive.</p>
     </div>
   </section>
 
@@ -226,6 +230,7 @@
       </div>
       <p>An interactive tool built on the archival database underlying <em>Forged in Genocide</em>. Ask a question in plain language — about an individual, a mine, a cause of death, or a pattern across the archive — and get an answer grounded directly in the cleaned dataset, cited to its original archival file in the same format used in the book.</p>
       <a class="btn btn-solid" href="namibian_worker_assistant.html">Try the tool →</a>
+      <a class="btn btn-outline" href="design-principles.html" style="margin-left:10px;">How it's built</a>
     </div>
   </section>
 
