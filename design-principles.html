@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How This Tool Is Built — William Blakemore Lyon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: light only;
+    --ink: #1a1f1a; --ink-soft: #444d40; --paper: #eee7d6; --paper-raised: #f6f1e4;
+    --line: #c9bfa4; --accent: #8a4b2e; --accent-soft: #d8c9a8; --sage: #46543f;
+    --serif: 'Source Serif 4', Georgia, serif;
+    --mono: 'IBM Plex Mono', 'Courier New', monospace;
+    --sans: 'Inter', -apple-system, sans-serif;
+  }
+  html { color-scheme: light only; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--ink); overflow-x: hidden; }
+  body { font-family: var(--sans); color: var(--ink); display: flex; justify-content: center; }
+  a { color: inherit; }
+  .page { width: 100%; max-width: 820px; background: var(--paper); min-height: 100vh; box-shadow: 0 12px 40px rgba(0,0,0,0.35); }
+
+  nav {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 22px 56px; border-bottom: 1px solid var(--line);
+    font-family: var(--mono); font-size: 12.5px;
+  }
+  nav .nav-name { letter-spacing: 0.04em; color: var(--ink); text-decoration: none; }
+  nav .nav-links a { text-decoration: none; color: var(--ink-soft); margin-left: 22px; border-bottom: 1px solid transparent; }
+  nav .nav-links a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+  nav .lang-toggle { margin-left: 22px; }
+  nav .lang-toggle a { margin-left: 4px; }
+  nav .lang-toggle .active { color: var(--ink); border-bottom: 1px solid var(--ink); }
+  @media (max-width: 640px) {
+    nav { flex-direction: column; align-items: flex-start; gap: 10px; padding: 20px 22px; }
+    nav .nav-links a { margin-left: 0; margin-right: 16px; }
+    .content { padding: 34px 22px !important; }
+  }
+
+  .content { padding: 48px 56px 70px; }
+  .kicker { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; color: var(--accent); }
+  h1 { font-family: var(--serif); font-weight: 600; font-size: 32px; line-height: 1.2; margin: 10px 0 6px; }
+  .subtitle { font-size: 15px; color: var(--ink-soft); line-height: 1.6; max-width: 62ch; margin-bottom: 36px; }
+
+  h2 { font-family: var(--serif); font-size: 21px; font-weight: 600; margin: 40px 0 14px; }
+  p { font-size: 15px; line-height: 1.7; max-width: 68ch; margin: 0 0 14px; }
+  .principle {
+    background: var(--paper-raised); border: 1px solid var(--line); border-left: 3px solid var(--accent);
+    padding: 20px 24px; margin: 18px 0;
+  }
+  .principle h3 { font-family: var(--mono); font-size: 12px; letter-spacing: 0.04em; color: var(--sage); text-transform: uppercase; margin: 0 0 10px; }
+  .principle p { margin: 0; font-size: 14.5px; }
+  .principle p + p { margin-top: 10px; }
+  a.inline { color: var(--accent); text-decoration: none; border-bottom: 1px dotted var(--accent); }
+  a.inline:hover { border-bottom-style: solid; }
+  code { font-family: var(--mono); font-size: 13px; background: var(--paper-raised); padding: 1px 5px; border: 1px solid var(--line); }
+  footer { padding: 24px 56px 40px; font-family: var(--mono); font-size: 11.5px; color: var(--ink-soft); }
+</style>
+</head>
+<body>
+<div class="page">
+  <nav>
+    <a class="nav-name" href="index.html">WILLIAM BLAKEMORE LYON</a>
+    <div class="nav-links">
+      <a href="index.html#about">About</a>
+      <a href="namibian_worker_assistant.html">Database Tool</a>
+      <a href="publications.html">Publications</a>
+      <a href="index.html#contact">Contact</a>
+      <span class="lang-toggle"><a href="design-principles.html" class="active">EN</a> | <a href="design-principles-de.html">DE</a></span>
+    </div>
+  </nav>
+
+  <div class="content">
+    <div class="kicker">DESIGN NOTES</div>
+    <h1>How This Tool Is Built</h1>
+    <p class="subtitle">The <a class="inline" href="namibian_worker_assistant.html">Namibian Worker Database research assistant</a> uses a generative AI model, but almost every design decision in it is about constraining that model rather than showcasing it. This page lays out those decisions explicitly, since good judgment about AI is usually invisible unless someone writes it down.</p>
+
+    <h2>Grounded retrieval, not free generation</h2>
+    <div class="principle">
+      <h3>The model never answers from its own general knowledge</h3>
+      <p>Every question first runs through a keyword-matching retrieval step against the actual cleaned dataset. Only the matching archival records are passed to the model, with an explicit instruction to answer only from what it's given and say plainly when the records don't cover the question. This follows a specific argument from a paper I am co-authoring, currently in peer review: <a class="inline" href="publications.html">"Leveraging Open Source LLMs for Historical Databases of Agricultural Science Research"</a>. That paper argues that retrieval-augmented generation, or an equivalent technique, functions as a baseline requirement for any conversational LLM interaction used in historical research, not an optional refinement — the safeguard against a model confidently filling gaps with plausible-sounding but ungrounded claims.</p>
+    </div>
+
+    <h2>Deterministic answers where they matter most</h2>
+    <div class="principle">
+      <h3>Counts, statistics, and charts are computed, not generated</h3>
+      <p>Questions like "how many workers died of pneumonia?" or requests for a chart are answered by directly counting and aggregating the underlying data in the browser — the language model is not involved in producing the number at all. This avoids the most common failure mode of LLM-assisted data tools: a fluent, confident-sounding statistic that is subtly wrong. If a chart request doesn't match a dimension the tool can compute cleanly, it says so and lists what it can do, rather than silently substituting an unrelated chart.</p>
+    </div>
+
+    <h2>Being honest about sensitive material</h2>
+    <div class="principle">
+      <h3>Open querying, gated publication</h3>
+      <p>This dataset includes real causes of death, next-of-kin names, and estate details for real, deceased individuals — the dataset spans 1892–1925, so everyone recorded in it is now deceased. The tool is fully open for exploration, but carries a persistent, visible notice asking anyone intending to use specific personal details in a publication to contact me first — with consultation with the National Archives of Namibia suggested as a further step. This reflects the <a class="inline" href="https://www.gida-global.org/care" target="_blank" rel="noopener">CARE Principles</a> for Indigenous and postcolonial data (Collective Benefit, Authority to Control, Responsibility, Ethics) as a necessary complement to FAIR data principles — "open by default" is not automatically the same as "ethically appropriate."</p>
+    </div>
+
+    <h2>Transparency about the data's own limitations</h2>
+    <div class="principle">
+      <h3>Currency conversion and archival naming, surfaced rather than hidden</h3>
+      <p>All monetary figures in the dataset were standardized into Pound sterling from multiple original currencies during its construction, with the possibility of minor inaccuracies. Rather than letting the model state a converted figure as if it were the original archival value, the interface and the model's instructions both surface this explicitly. Archival citations follow the exact convention used in <em>Forged in Genocide</em> — full name expanded on first use per repository, abbreviated after — generated automatically rather than left to the model to approximate.</p>
+    </div>
+
+    <h2>Representing people accurately, not just data accurately</h2>
+    <div class="principle">
+      <h3>Ethnicity phrasing follows historical convention, not raw field values</h3>
+      <p>The dataset often records a specific Ovambo polity alongside the broader "Ovambo" label (e.g., "Oukwanyama; Ovambo"). Historically, individuals identified primarily with their specific polity, not the broader ethnolinguistic category alone. The model is instructed to phrase this accordingly — "an Ovambo man from Oukwanyama," matching the published scholarship's own convention — rather than presenting a raw, undifferentiated data field as if it were the full picture of someone's identity.</p>
+    </div>
+
+    <h2>A sparring partner, not a replacement for expertise</h2>
+    <div class="principle">
+      <h3>Narrow, specific questions — guided by subject knowledge — over open-ended ones</h3>
+      <p>"Leveraging Open Source LLMs for Historical Databases of Agricultural Science Research" also argues that LLMs are most useful to historians not as a substitute for close reading and critical judgment, but as a sparring partner: most reliable when guided by narrow, specific questions informed by real subject-matter expertise, refined through back-and-forth rather than posed once and trusted outright. This tool's retrieval-then-generate structure is a direct application of that idea — the model works within a bounded, specific set of records rather than being asked to reason freely over the whole archive at once, and its aggregate/chart answers are computed rather than inferred precisely because some questions are better answered by arithmetic than by a language model's judgment.</p>
+    </div>
+
+    <h2>What "open history" actually requires — and where this tool still falls short</h2>
+    <div class="principle">
+      <h3>A demanding standard, honestly not yet fully met here</h3>
+      <p>"Leveraging Open Source LLMs for Historical Databases of Agricultural Science Research" develops the framework of <strong>open history</strong>: adapting open-source, open-science, and FAIR principles specifically to LLM-assisted historical research. Its bar is genuinely demanding — models runnable locally, on any available hardware, with no dependence on a commercial AI product or subscription, for real long-term reproducibility independent of any one company's continued existence or pricing.</p>
+      <p>By that standard, this tool doesn't fully qualify yet. It currently runs on Claude; an earlier attempt to switch it to an open-weight model via a European hosted provider (Mistral AI) still would not have met the bar either, since calling any hosted API — whether the weights behind it are open or closed — remains a commercial subscription dependency, not the self-hosted independence the framework actually calls for. That attempt is documented rather than erased, since the practical friction it surfaced (a retired model, unclear free-tier limits) is itself informative.</p>
+      <p>The version that would genuinely meet this standard is a self-hosted, open-weight model — similar to the h2oGPT/Ollama-based approach used in my postdoc work on the Rice Knowledge database at the Universität Zürich — run on local or institutional hardware. That remains the concrete direction for this tool's next version, not an abandoned idea, and it aligns with data-sovereignty priorities increasingly relevant at European universities as well as with my own background and goals in open-source, open-access digital methods.</p>
+    </div>
+
+    <h2>Licensing</h2>
+    <p>The underlying <a class="inline" href="https://edoc.hu-berlin.de/handle/18452/29099" target="_blank" rel="noopener">Namibian Worker Database</a> is released under <strong>CC BY 4.0</strong>. This tool's code follows the same open spirit; the dataset's own documentation (linked on the <a class="inline" href="namibian_worker_assistant.html">tool page</a>) records the specific cleaning and citation decisions made along the way.</p>
+  </div>
+
+  <footer>Last updated 2026.</footer>
+</div>
+</body>
+</html>
