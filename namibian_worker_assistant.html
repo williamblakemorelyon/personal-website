@@ -329,7 +329,7 @@
     <div class="concept-box">
       Built from the dataset underlying <em>Forged in Genocide: Migrant Workers Shaping Colonial Capitalism in Namibia, 1890–1925</em> (De Gruyter, 2024) and "From Labour Elites to Garveyites" (<em>JSAS</em>, 2021).
       <br><br>
-      Powered by Claude (Anthropic). <a href="design-principles.html" style="color:var(--accent);">How this tool is built →</a>
+      Answers are written by Mistral Small, an open-weight model from the French lab Mistral AI, called through Mistral's hosted API. <a href="design-principles.html" style="color:var(--accent);">How this tool is built →</a>
       <br><br>
       All monetary figures are standardized to Pound sterling (£) from original multi-currency records; minor inaccuracies from this conversion are possible.
       <br><br>
@@ -751,7 +751,7 @@ function datasetCitation() {
 
 // ---------------- Backend proxy call ----------------
 // IMPORTANT: this calls YOUR OWN backend (/api/chat), which in turn calls
-// Mistral AI's hosted open-weight Mistral Small 4 model (not Claude/Anthropic).
+// Mistral AI's hosted open-weight Mistral Small model (see /api/chat.js).
 // This means the live chat feature will only work once this site is deployed
 // with the /api/chat serverless function running (see /api/chat.js for setup).
 // It will NOT work when just previewing this file in the Claude.ai artifact
