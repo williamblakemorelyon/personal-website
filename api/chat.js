@@ -1,36 +1,31 @@
 // api/chat.js
 //
-// This is a Vercel Serverless Function. It runs on Vercel's servers, not in
-// the visitor's browser — so your Anthropic API key stays hidden here and is
-// never exposed to anyone viewing your website's source code.
+// Vercel Serverless Function. Runs on Vercel's servers, not in the visitor's
+// browser, so the Mistral API key stays hidden here.
 //
 // SETUP:
-// 1. Get an API key from https://console.anthropic.com (Settings > API Keys).
-// 2. In your Vercel project settings, add an Environment Variable:
-//      Name:  ANTHROPIC_API_KEY
-//      Value: (paste your key)
-// 3. Deploy. This file becomes reachable at:  https://your-site.vercel.app/api/chat
+// 1. In Mistral Studio (console.mistral.ai) create an API key, add a small
+//    prepaid balance, and set a monthly spending limit under
+//    Admin Panel > Subscriptions > Billing. Also switch on the API data
+//    opt-out so prompts are not used to improve models.
+// 2. In Vercel > Project > Settings > Environment Variables add:
+//      MISTRAL_API_KEY = (your key)
+//    Optional: MISTRAL_MODEL = a specific model name. Defaults to
+//    "mistral-small-latest" (Mistral's current open-weight Small model).
+// 3. Redeploy. This becomes reachable at /api/chat.
 //
-// NOTE: this project's original goal was to use an open-weight, ideally
-// European-hosted model (see FUTURE_PLANS.md) to match the open-access
-// argument in "Leveraging Open Source LLMs for Historical Databases of
-// Agricultural Science Research." This Anthropic/Claude version is a
-// pragmatic fallback after hitting real friction with Mistral AI (a
-// retired model, then unclear free-tier rate limits) — reverted to here to
-// keep the live demo working, with the open/European swap revisited later.
+// The browser still receives the same response shape the tool already
+// understands: { content: [ { type: "text", text: "..." } ] }.
 //
-// SAFETY NOTE: this endpoint is public — anyone visiting your live site can
-// trigger it, which means anyone could send it requests and use your API
-// budget. Two easy safeguards:
-//   (a) In the Anthropic Console, set a monthly spending limit on this key.
-//   (b) The MAX_TOKENS and basic rate-limit below keep any single response
-//       cheap and slow down rapid repeated requests from the same visitor.
+// A previous Anthropic/Claude version is kept in backup/chat.anthropic.js
+// (outside the api/ folder so Vercel does not treat it as a live endpoint).
 
 const MAX_TOKENS = 700;
+const TEMPERATURE = 0.2; // low: we want faithful answers grounded in the records
+const MODEL = process.env.MISTRAL_MODEL || 'mistral-small-latest';
 
-// Extremely simple in-memory rate limit: max 15 requests per minute per IP.
-// Resets whenever the function cold-starts, so it's a soft speed bump,
-// not a hard security guarantee — the spending cap in (a) above is your
+// Soft per-IP rate limit: 15 requests per minute. Resets on cold start, so it
+// is a speed bump only. The monthly spending limit in Mistral Studio is the
 // real safety net.
 const requestLog = new Map();
 
@@ -51,7 +46,7 @@ export default async function handler(req, res) {
 
   const ip = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown';
   if (isRateLimited(ip)) {
-    return res.status(429).json({ error: 'Too many requests — please wait a moment and try again.' });
+    return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   }
 
   const { system, message } = req.body || {};
@@ -59,33 +54,47 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing "message" in request body.' });
   }
 
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return res.status(500).json({ error: 'Server is missing ANTHROPIC_API_KEY. Set it in your Vercel project settings.' });
+  if (!process.env.MISTRAL_API_KEY) {
+    return res.status(500).json({ error: 'Server is missing MISTRAL_API_KEY. Set it in your Vercel project settings.' });
   }
 
+  const messages = [];
+  if (system) messages.push({ role: 'system', content: system });
+  messages.push({ role: 'user', content: message });
+
   try {
-    const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
+    const mistralRes = await fetch('https://api.mistral.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
+        'Authorization': `Bearer ${process.env.MISTRAL_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
+        model: MODEL,
+        messages,
         max_tokens: MAX_TOKENS,
-        system: system || undefined,
-        messages: [{ role: 'user', content: message }],
+        temperature: TEMPERATURE,
       }),
     });
 
-    const data = await anthropicRes.json();
+    const data = await mistralRes.json().catch(() => ({}));
 
-    if (!anthropicRes.ok) {
-      return res.status(anthropicRes.status).json({ error: data });
+    if (!mistralRes.ok) {
+      if (mistralRes.status === 429) {
+        return res.status(429).json({ error: 'The model service is busy or the monthly usage limit has been reached. Please try again in a moment.' });
+      }
+      const detail = data?.message || data?.error?.message || data?.detail || `Mistral request failed (${mistralRes.status})`;
+      return res.status(mistralRes.status).json({ error: typeof detail === 'string' ? detail : JSON.stringify(detail) });
     }
 
-    return res.status(200).json(data);
+    // Mistral can return content as a string or as an array of parts.
+    const raw = data?.choices?.[0]?.message?.content;
+    const text = Array.isArray(raw)
+      ? raw.map(p => (typeof p === 'string' ? p : p?.text || '')).join('')
+      : (raw || '');
+
+    // Normalize to the shape the front end already reads.
+    return res.status(200).json({ content: [{ type: 'text', text }] });
   } catch (err) {
     return res.status(500).json({ error: String(err) });
   }
