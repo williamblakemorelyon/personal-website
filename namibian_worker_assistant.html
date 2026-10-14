@@ -499,20 +499,21 @@ function renderBarChartSVG(entries) {
   const maxVal = Math.max(...entries.map(e => e[1]), 1);
   const barHeight = 20;
   const gap = 9;
-  const chartWidth = 520;
-  const labelWidth = 165;
+  const chartWidth = 580;
+  const labelWidth = 215;
   const barAreaWidth = chartWidth - labelWidth - 45;
   const height = entries.length * (barHeight + gap) + 10;
   let bars = '';
   entries.forEach(([label, val], i) => {
     const y = i * (barHeight + gap);
     const w = Math.max(2, (val / maxVal) * barAreaWidth);
-    const safeLabel = escapeHtml(String(label)).slice(0, 26);
+    const rawLabel = String(label);
+    const safeLabel = escapeHtml(rawLabel.length > 32 ? rawLabel.slice(0, 31) + '…' : rawLabel);
     bars += `<text x="0" y="${y + barHeight * 0.72}" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#444d40">${safeLabel}</text>
       <rect x="${labelWidth}" y="${y}" width="${w}" height="${barHeight}" fill="#8a4b2e"></rect>
       <text x="${labelWidth + w + 6}" y="${y + barHeight * 0.72}" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#1a1f1a">${val}</text>`;
   });
-  return `<svg viewBox="0 0 ${chartWidth} ${height}" width="100%" style="max-width:540px;display:block;">${bars}</svg>`;
+  return `<svg viewBox="0 0 ${chartWidth} ${height}" width="100%" style="max-width:600px;display:block;">${bars}</svg>`;
 }
 
 function normalizeItemPhrase(raw) {
@@ -622,24 +623,93 @@ function initLeafletMap(containerId, sites) {
   }
 }
 
+// Find which category values (ethnic group, country, employer, mine, cause of death)
+// a question is about. Whole-word match so short values such as "Kru" work;
+// tolerates a plural "s". Returns the best (longest) match per field, so
+// "Kru workers who died of pneumonia" applies both filters together.
+const FIELD_LABELS = { ethnicGroup: 'ethnic group', country: 'country of origin', employer: 'employer', mine: 'mine', causeOfDeath: 'cause of death' };
+
+function findGroups(query) {
+  const qLower = query.toLowerCase();
+  const found = [];
+  for (const field of CATEGORY_FIELDS) {
+    let best = null;
+    for (const val of CATEGORY_VALUES[field]) {
+      if (val.length < 3) continue;
+      const esc = val.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const m = new RegExp('(^|[^a-z])(' + esc + ')s?($|[^a-z])').exec(qLower);
+      if (m) {
+        const start = m.index + m[1].length;
+        const end = start + m[2].length;
+        if (!best || val.length > best.value.length) best = { field, value: val, start, end };
+      }
+    }
+    if (best) found.push(best);
+  }
+  // If one match sits inside a longer match from another field (e.g. ethnic group
+  // "Spanish" inside cause of death "Spanish Influenza"), keep only the longer one.
+  return found
+    .filter(a => !found.some(b => b !== a && b.start <= a.start && b.end >= a.end && (b.end - b.start) > (a.end - a.start)))
+    .map(({ field, value }) => ({ field, value }));
+}
+
+// strict: field equals the value exactly (e.g. cause of death is only "Pneumonia").
+// loose: for cause of death, the value may be one of several causes separated by ";"
+// (e.g. "Pneumonia; scurvy" also counts as mentioning pneumonia).
+function matchesGroup(r, g, loose) {
+  const v = (r[g.field] || '').toLowerCase().trim();
+  const target = g.value.toLowerCase().trim();
+  if (v === target) return true;
+  if (loose && g.field === 'causeOfDeath') return v.split(';').some(part => part.trim() === target);
+  return false;
+}
+
+function filterByGroups(groups, loose = false) {
+  return NWD_DATA.filter(r => groups.every(g => matchesGroup(r, g, loose)));
+}
+
+function groupLabel(groups) {
+  return groups.map(g => `${FIELD_LABELS[g.field] || g.field} = "${g.value}"`).join(' and ');
+}
+
 function tryAggregate(query) {
   const isCountQuery = /how many|number of|count of/i.test(query);
   if (!isCountQuery) return null;
-  const qLower = query.toLowerCase();
-  for (const field of CATEGORY_FIELDS) {
-    for (const val of CATEGORY_VALUES[field]) {
-      if (val.length < 4) continue;
-      if (qLower.includes(val.toLowerCase())) {
-        const matches = NWD_DATA.filter(r => (r[field] || '').toLowerCase() === val.toLowerCase());
-        return { field, value: val, count: matches.length, matches };
-      }
-    }
+  const groups = findGroups(query);
+  if (groups.length) {
+    const matches = filterByGroups(groups);
+    const looseMatches = filterByGroups(groups, true);
+    return { groups, count: matches.length, looseCount: looseMatches.length, matches };
   }
   // fallback: total records
   if (/how many (records|workers|people|entries|individuals)/i.test(query) && !/died|from|at|working/i.test(query)) {
-    return { field: 'total', value: null, count: NWD_DATA.length, matches: NWD_DATA };
+    return { groups: [], total: true, count: NWD_DATA.length, matches: NWD_DATA };
   }
   return null;
+}
+
+// Statistics on estate worth (average, median, highest, lowest, total), computed
+// in code over ALL matching records, never by the language model.
+function tryStats(query) {
+  const q = query.toLowerCase();
+  const statWord = /(average|mean|median|highest|lowest|largest|smallest|maximum|minimum|richest|poorest|total|sum)/.exec(q);
+  if (!statWord || !/(estate|worth|value|assets)/.test(q)) return null;
+  const groups = findGroups(query);
+  const rows = groups.length ? filterByGroups(groups) : NWD_DATA;
+  const withVal = rows.filter(r => typeof r.estateWorth === 'number' && !isNaN(r.estateWorth));
+  if (withVal.length === 0) return { groups, groupCount: rows.length, n: 0 };
+  const vals = withVal.map(r => r.estateWorth).sort((a, b) => a - b);
+  const sum = vals.reduce((a, b) => a + b, 0);
+  const mid = Math.floor(vals.length / 2);
+  const median = vals.length % 2 ? vals[mid] : (vals[mid - 1] + vals[mid]) / 2;
+  const top = withVal.reduce((a, b) => (b.estateWorth > a.estateWorth ? b : a));
+  const low = withVal.reduce((a, b) => (b.estateWorth < a.estateWorth ? b : a));
+  return {
+    groups, groupCount: rows.length, n: vals.length,
+    mean: sum / vals.length, median, sum,
+    max: top, min: low, zeros: vals.filter(v => v === 0).length,
+    statWord: statWord[1],
+  };
 }
 
 // ---------------- Citation formatting ----------------
@@ -747,10 +817,11 @@ function escapeHtml(s) {
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-function renderCitationBlock(citations) {
+function renderCitationBlock(citations, heading) {
   if (!citations.length) return '';
   const items = citations.map(c => `<div class="citation-item">${escapeHtml(c)}</div>`).join('');
-  return `<div class="citation-block">${items}</div>`;
+  const head = heading ? `<div style="font-size:12px;color:var(--ink-soft);margin-bottom:6px;">${escapeHtml(heading)}</div>` : '';
+  return `<div class="citation-block">${head}${items}</div>`;
 }
 
 async function handleQuery(query) {
@@ -801,11 +872,43 @@ async function handleQuery(query) {
       return;
     }
     const chartSvg = renderBarChartSVG(viz.data);
+    const covered = viz.approximate ? null : viz.data.reduce((a, e) => a + e[1], 0);
+    const coverageText = covered === null
+      ? ` (${NWD_DATA.length} records)`
+      : `: ${covered} of ${NWD_DATA.length} records have this information recorded`;
     lastCitationSet = [datasetCitation()];
-    const approxNote = viz.approximate
-      ? `<p style="font-size:12px;color:var(--ink-soft)">Item names are approximately parsed from free-text estate inventories (quantities, pricing, and asides stripped); counts are indicative, not exact.</p>`
+    const comboNote = /cause of death/i.test(viz.label)
+      ? `<p style="font-size:12px;color:var(--ink-soft)">Records that list several causes (for example "Pneumonia; Spanish Influenza") are counted as their own category, so single-cause bars understate how often a cause is mentioned.</p>`
       : '';
-    addAssistantMessage(`<p><strong>${escapeHtml(viz.label)}</strong> — computed directly from the cleaned dataset (${NWD_DATA.length} records).</p>${chartSvg}${approxNote}${renderCitationBlock(lastCitationSet)}`);
+    const approxNote = comboNote + (viz.approximate
+      ? `<p style="font-size:12px;color:var(--ink-soft)">Item names are approximately parsed from free-text estate inventories (quantities, pricing, and asides stripped); counts are indicative, not exact.</p>`
+      : '');
+    addAssistantMessage(`<p><strong>${escapeHtml(viz.label)}</strong> — computed directly from the cleaned dataset${coverageText}.</p>${chartSvg}${approxNote}${renderCitationBlock(lastCitationSet)}`);
+    return;
+  }
+
+  // --- Estate-worth statistics (computed in code over all matching records) ---
+  const st = tryStats(query);
+  if (st) {
+    const who = st.groups.length ? escapeHtml(groupLabel(st.groups)) : 'all records';
+    const gbp = v => '£' + v.toFixed(2);
+    let body;
+    if (st.n === 0) {
+      body = `<p>None of the ${st.groupCount} records for ${who} has a recorded estate worth.</p>`;
+    } else {
+      const zeroNote = st.zeros ? ` (${st.zeros} of them recorded as £0)` : '';
+      body = `<p><strong>Estate worth, ${who}:</strong> ${st.n} of ${st.groupCount} records have a recorded estate worth${zeroNote}.</p>
+      <ul style="margin:6px 0 6px 18px;padding:0;">
+        <li>Average: <strong>${gbp(st.mean)}</strong></li>
+        <li>Median: <strong>${gbp(st.median)}</strong></li>
+        <li>Highest: ${gbp(st.max.estateWorth)} (${escapeHtml(st.max.name)})</li>
+        <li>Lowest: ${gbp(st.min.estateWorth)} (${escapeHtml(st.min.name)})</li>
+        <li>Total: ${gbp(st.sum)}</li>
+      </ul>
+      <p style="font-size:12.5px;color:var(--ink-soft)">Figures in Pound sterling, as standardized in the database. Computed directly from every matching record in the cleaned dataset (not an LLM estimate); records without a recorded estate worth are left out of the calculation.</p>`;
+    }
+    lastCitationSet = [datasetCitation()];
+    addAssistantMessage(`${body}${renderCitationBlock(lastCitationSet)}`);
     return;
   }
 
@@ -813,10 +916,15 @@ async function handleQuery(query) {
   const agg = tryAggregate(query);
   if (agg) {
     let text;
-    if (agg.field === 'total') {
+    if (agg.total) {
       text = `The cleaned dataset contains <strong>${agg.count}</strong> records in total.`;
     } else {
-      text = `<strong>${agg.count}</strong> record${agg.count === 1 ? '' : 's'} match ${agg.field === 'causeOfDeath' ? 'cause of death' : agg.field} = "${escapeHtml(agg.value)}".`;
+      const hasCause = agg.groups.some(g => g.field === 'causeOfDeath');
+      if (hasCause && agg.looseCount !== agg.count) {
+        text = `<strong>${agg.count}</strong> record${agg.count === 1 ? '' : 's'} match ${escapeHtml(groupLabel(agg.groups))} as the only recorded cause of death, and <strong>${agg.looseCount}</strong> mention it at all, including records that list it alongside other causes (for example "Pneumonia; scurvy").`;
+      } else {
+        text = `<strong>${agg.count}</strong> record${agg.count === 1 ? '' : 's'} match ${escapeHtml(groupLabel(agg.groups))}.`;
+      }
     }
     lastCitationSet = [datasetCitation()];
     addAssistantMessage(`<p>${text}</p><p style="font-size:12.5px;color:var(--ink-soft)">This is a direct count from the cleaned dataset (not an LLM estimate).</p>${renderCitationBlock(lastCitationSet)}`);
@@ -845,6 +953,8 @@ IMPORTANT CONTEXT ON ETHNICITY: The 'ethnicGroup' field often lists a specific O
 
 IMPORTANT CONTEXT ON CURRENCY: All monetary figures in this dataset are expressed in Pound sterling (£). During construction of the database, the compiler standardized multiple original currencies (e.g., German Mark, South African Pound) into £ sterling; the compiler notes this introduces the possibility of minor inaccuracies. Whenever you state a monetary figure, express it as "£X (Pound sterling)" and do not present it as being in the record's original, unconverted currency.
 
+IMPORTANT: The records below are only the ${records.length} best keyword matches for the question, NOT the whole dataset. Never state counts, totals, averages, percentages or "none exist" for the dataset as a whole based on them. If the question asks for such a figure, say you can only describe the records shown, and that the interface computes dataset-wide figures separately.
+
 Write a concise, factual answer (2-5 sentences typically). After the answer, do NOT include citations yourself — the interface will attach them separately. Just focus on giving an accurate, well-grounded answer to the question based on the provided records.
 
 RECORDS:
@@ -858,7 +968,7 @@ ${contextBlock}`;
       .filter(Boolean);
     // de-duplicate citations from the same record referenced implicitly by name overlap already handled by unique records
     lastCitationSet = citations;
-    addAssistantMessage(`<p>${escapeHtml(reply).replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>')}</p>${renderCitationBlock(citations)}`);
+    addAssistantMessage(`<p>${escapeHtml(reply).replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>')}</p>${renderCitationBlock(citations, `Records retrieved for this answer — the ${records.length} best keyword matches. The answer is based on these records only, not on the whole dataset.`)}`);
   } catch (e) {
     removeThinking();
     addAssistantMessage(`<p>Sorry — something went wrong generating an answer (${escapeHtml(String(e))}).</p>`);
