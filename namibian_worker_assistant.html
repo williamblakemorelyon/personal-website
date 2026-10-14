@@ -408,7 +408,11 @@ function retrieve(query, topN = 8) {
     return { rec, score };
   }).filter(x => x.score > 0);
   scored.sort((a, b) => b.score - a.score);
-  return scored.slice(0, topN).map(x => x.rec);
+  // Drop weak matches when there is a clearly strong one (e.g. a name match), so
+  // "Tango Mifango" does not also pull in "Katangolo" just because it contains "tango".
+  const topScore = scored.length ? scored[0].score : 0;
+  const cutoff = topScore >= 10 ? topScore * 0.25 : 0;
+  return scored.filter(x => x.score >= cutoff).slice(0, topN).map(x => x.rec);
 }
 
 // ---------------- Aggregate query handling ----------------
@@ -708,6 +712,8 @@ function tryStats(query) {
     groups, groupCount: rows.length, n: vals.length,
     mean: sum / vals.length, median, sum,
     max: top, min: low, zeros: vals.filter(v => v === 0).length,
+    maxTies: vals.filter(v => v === top.estateWorth).length,
+    minTies: vals.filter(v => v === low.estateWorth).length,
     statWord: statWord[1],
   };
 }
@@ -901,8 +907,8 @@ async function handleQuery(query) {
       <ul style="margin:6px 0 6px 18px;padding:0;">
         <li>Average: <strong>${gbp(st.mean)}</strong></li>
         <li>Median: <strong>${gbp(st.median)}</strong></li>
-        <li>Highest: ${gbp(st.max.estateWorth)} (${escapeHtml(st.max.name)})</li>
-        <li>Lowest: ${gbp(st.min.estateWorth)} (${escapeHtml(st.min.name)})</li>
+        <li>Highest: ${gbp(st.max.estateWorth)} (${st.maxTies > 1 ? `${st.maxTies} records tied, for example ` : ''}${escapeHtml(st.max.name)})</li>
+        <li>Lowest: ${gbp(st.min.estateWorth)} (${st.minTies > 1 ? `${st.minTies} records tied, for example ` : ''}${escapeHtml(st.min.name)})</li>
         <li>Total: ${gbp(st.sum)}</li>
       </ul>
       <p style="font-size:12.5px;color:var(--ink-soft)">Figures in Pound sterling, as standardized in the database. Computed directly from every matching record in the cleaned dataset (not an LLM estimate); records without a recorded estate worth are left out of the calculation.</p>`;
@@ -921,7 +927,11 @@ async function handleQuery(query) {
     } else {
       const hasCause = agg.groups.some(g => g.field === 'causeOfDeath');
       if (hasCause && agg.looseCount !== agg.count) {
-        text = `<strong>${agg.count}</strong> record${agg.count === 1 ? '' : 's'} match ${escapeHtml(groupLabel(agg.groups))} as the only recorded cause of death, and <strong>${agg.looseCount}</strong> mention it at all, including records that list it alongside other causes (for example "Pneumonia; scurvy").`;
+        const strictSet = new Set(agg.matches.map(r => r.id));
+        const causeGroup = agg.groups.find(g => g.field === 'causeOfDeath');
+        const combo = filterByGroups(agg.groups, true).find(r => !strictSet.has(r.id));
+        const exampleText = combo ? ` (for example "${escapeHtml(combo.causeOfDeath)}")` : '';
+        text = `<strong>${agg.count}</strong> record${agg.count === 1 ? '' : 's'} match ${escapeHtml(groupLabel(agg.groups))} with ${escapeHtml(causeGroup.value)} as the only recorded cause of death. Counting records that list it alongside other causes${exampleText}, the total is <strong>${agg.looseCount}</strong>.`;
       } else {
         text = `<strong>${agg.count}</strong> record${agg.count === 1 ? '' : 's'} match ${escapeHtml(groupLabel(agg.groups))}.`;
       }
@@ -953,6 +963,9 @@ IMPORTANT CONTEXT ON ETHNICITY: The 'ethnicGroup' field often lists a specific O
 
 IMPORTANT CONTEXT ON CURRENCY: All monetary figures in this dataset are expressed in Pound sterling (£). During construction of the database, the compiler standardized multiple original currencies (e.g., German Mark, South African Pound) into £ sterling; the compiler notes this introduces the possibility of minor inaccuracies. Whenever you state a monetary figure, express it as "£X (Pound sterling)" and do not present it as being in the record's original, unconverted currency.
 
+IF THE RECORDS DO NOT ANSWER THE QUESTION, begin your reply with exactly "NO_ANSWER:" followed by one short sentence saying that the retrieved records do not contain the answer. Do not guess.
+Report only attributes that are actually present in the records. If a field such as job description, age or sex is absent, do not infer or add it (for example, do not call someone a "laborer" or a "man" unless a record says so).
+
 IMPORTANT: The records below are only the ${records.length} best keyword matches for the question, NOT the whole dataset. Never state counts, totals, averages, percentages or "none exist" for the dataset as a whole based on them. If the question asks for such a figure, say you can only describe the records shown, and that the interface computes dataset-wide figures separately.
 
 Write a concise, factual answer (2-5 sentences typically). After the answer, do NOT include citations yourself — the interface will attach them separately. Just focus on giving an accurate, well-grounded answer to the question based on the provided records.
@@ -963,6 +976,12 @@ ${contextBlock}`;
   try {
     const reply = await callLLM(sys, query);
     removeThinking();
+    if (/^\s*NO_ANSWER:/i.test(reply)) {
+      const msg = reply.replace(/^\s*NO_ANSWER:\s*/i, '');
+      lastCitationSet = [datasetCitation()];
+      addAssistantMessage(`<p>${escapeHtml(msg)}</p><p style="font-size:12.5px;color:var(--ink-soft)">None of the records retrieved for this question answers it, so no records are cited. This is not proof that the database contains nothing on the topic: try a name, ethnic group, mine, employer or cause of death.</p>${renderCitationBlock(lastCitationSet)}`);
+      return;
+    }
     const citations = records
       .map(r => formatCitation(r))
       .filter(Boolean);
